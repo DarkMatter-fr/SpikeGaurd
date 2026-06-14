@@ -1,0 +1,109 @@
+W0000 00:00:1781418826.447194   19368 face_landmarker_graph.cc:180] Sets FaceBlendshapesGraph acceleration to xnnpack by default.
+INFO: Created TensorFlow Lite XNNPACK delegate for CPU.
+W0000 00:00:1781418826.476630   15456 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+W0000 00:00:1781418826.495606   25176 inference_feedback_manager.cc:121] Feedback manager requires a model with a single signature inference. Disabling support for feedback tensors.
+opening handshake failed
+Traceback (most recent call last):
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\websockets\asyncio\server.py", line 356, in conn_handler
+    await connection.handshake(
+    ...<3 lines>...
+    )
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\websockets\asyncio\server.py", line 207, in handshake
+    raise self.protocol.handshake_exc
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\websockets\server.py", line 140, in accept
+    ) = self.process_request(request)
+        ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\websockets\server.py", line 235, in process_request
+    raise InvalidUpgrade(
+        "Connection", ", ".join(connection) if connection else None
+    )
+websockets.exceptions.InvalidUpgrade: invalid Connection header: keep-alive
+E0000 00:00:1781420687.752873    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781420747.757509    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781420807.772735    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781420867.797067    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781420927.804303    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781420987.820870    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781421047.828017    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781421107.829349    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781421167.852117    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781421227.878005    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781421287.907074    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:15:47.670634+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781421954.686993    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:30:48.262449+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 53946)
+Traceback (most recent call last):
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dhruv\Downloads\SpikeGaurd\src\main.py", line 152, in __init__
+    super().__init__(*args, directory=ui_dir, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\http\server.py", line 732, in __init__
+    super().__init__(*args, **kwargs)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\http\server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\http\server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "C:\Users\dhruv\Downloads\SpikeGaurd\src\main.py", line 171, in do_GET
+    self._send_json(session_logger.summary() if session_logger else {})
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dhruv\Downloads\SpikeGaurd\src\main.py", line 164, in _send_json
+    self.wfile.write(body)
+    ~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\dhruv\AppData\Local\Python\pythoncore-3.14-64\Lib\socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+ConnectionAbortedError: [WinError 10053] An established connection was aborted by the software in your host machine
+----------------------------------------
+E0000 00:00:1781422014.693011    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:30:48.262449+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781422074.701704    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:30:48.262449+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781422134.713042    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:30:48.262449+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781422194.729717    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:30:48.262449+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180
+E0000 00:00:1781422315.919760    8624 portable_clearcut_uploader.cc:90] Failed to send to clearcut: FAILED_PRECONDITION: Not valid for uploading until: 2026-06-14T07:45:55.919126514+00:00
+=== Source Location Trace: === 
+wireless/android/play/playlog/cplusplus/portable_clearcut_uploader.cc:180

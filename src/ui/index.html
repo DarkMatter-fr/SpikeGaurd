@@ -4,184 +4,190 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SpikeGuard - Driver Drowsiness Monitoring System</title>
-    <!-- Premium Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/spikeguard-mark.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <!-- Emergency Warning Overlay -->
     <div id="alarm-overlay" class="hidden">
         <div class="alarm-content">
-            <div class="alarm-icon">⚠</div>
-            <h1>DROWSINESS EVENT</h1>
-            <p>IMMEDIATE OPERATOR COGNITIVE DECLINE DETECTED</p>
-            <div class="alarm-action">AUDIBLE ALARM AND VISUAL FEEDBACK ACTIVE</div>
-            <button id="btn-dismiss-alarm" class="dismiss-btn">STOP ALARM (I'M AWAKE)</button>
+            <div class="alarm-icon">!</div>
+            <h1>WAKE UP!</h1>
+            <p>Drowsiness pattern detected</p>
+            <button id="btn-dismiss-alarm" class="dismiss-btn">Dismiss alert</button>
         </div>
     </div>
 
-    <div class="app-container">
-        <!-- Header Section -->
-        <header>
-            <div class="logo-area">
-                <span class="logo-icon">⚡</span>
-                <div class="logo-text">
-                    <h1>SPIKEGUARD</h1>
-                    <span>Neuromorphic Driver Monitoring System</span>
+    <div class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <img class="brand-logo" src="assets/spikeguard-mark.png" alt="SpikeGuard logo">
+                <div>
+                    <h1>SpikeGuard</h1>
+                    <span>Local neuromorphic driver monitor</span>
                 </div>
             </div>
-            <div class="system-status">
-                <div id="status-indicator" class="disconnected">
+            <div class="topbar-actions">
+                <div id="status-indicator" class="connection-pill disconnected">
                     <span class="status-dot"></span>
-                    <span id="status-text">OFFLINE</span>
+                    <span id="status-text">Offline</span>
                 </div>
+                <button id="btn-sound-toggle" class="icon-btn active">Audio on</button>
+                <button id="btn-reset" class="icon-btn">Reset</button>
             </div>
         </header>
 
-        <!-- Main Dashboard Grid -->
-        <main class="dashboard-grid">
-            
-            <!-- Column 1: Video & Visual Landmarks -->
-            <section class="panel camera-panel">
-                <div class="panel-header">
-                    <h2>LIVE VIDEO FEED</h2>
-                    <span class="badge">15 FPS TARGET</span>
+        <main class="workspace">
+            <section class="video-stage">
+                <div class="stage-header">
+                    <div>
+                        <p class="eyebrow">Live camera</p>
+                        <h2 id="camera-title">Camera permission required</h2>
+                    </div>
+                    <span id="fps-badge" class="soft-badge">15 FPS</span>
                 </div>
-                <div class="video-container">
-                    <img id="video-stream" src="" alt="Webcam Feed" class="hidden">
+
+                <div class="video-card">
+                    <img id="video-stream" src="" alt="Processed driver camera feed" class="hidden">
                     <canvas id="landmark-canvas"></canvas>
-                    <div id="no-signal" class="no-signal">
-                        <div class="pulse-ring"></div>
-                        <p>AWAITING VIDEO STREAM CONNECTION...</p>
+                    <video id="local-camera-preview" class="hidden" playsinline muted></video>
+                    <canvas id="camera-capture-canvas" class="hidden"></canvas>
+
+                    <div id="no-signal" class="camera-permission">
+                        <div class="permission-mark">CAM</div>
+                        <h3>Start live monitoring</h3>
+                        <p>SpikeGuard needs webcam permission in this browser to analyze your face locally.</p>
+                        <button id="btn-start-camera" class="primary-btn">Start camera</button>
+                        <button id="btn-use-demo" class="secondary-btn">Use mock demo from backend</button>
+                        <span id="camera-error" class="camera-error"></span>
                     </div>
                 </div>
-                <div class="camera-info">
-                    <div class="info-block">
-                        <span class="lbl">FACE ACQUISITION</span>
-                        <span id="face-status" class="val neutral">SEARCHING...</span>
+
+                <div class="state-strip">
+                    <div>
+                        <span>Face</span>
+                        <strong id="face-status" class="val neutral">Waiting</strong>
                     </div>
-                    <div class="info-block">
-                        <span class="lbl">COGNITIVE STATE</span>
-                        <span id="system-state" class="val normal">UNKNOWN</span>
+                    <div>
+                        <span>State</span>
+                        <strong id="system-state" class="val normal">Idle</strong>
+                    </div>
+                    <div>
+                        <span>Events</span>
+                        <strong id="session-event-count">0</strong>
+                    </div>
+                    <div>
+                        <span>Avg alert</span>
+                        <strong id="session-avg-duration">0.00s</strong>
                     </div>
                 </div>
             </section>
 
-            <!-- Column 2: Neuromorphic Inference Monitor -->
-            <div class="stats-column">
-                
-                <!-- SNN Potential & Spike Activity -->
-                <section class="panel snn-panel">
-                    <div class="panel-header">
-                        <h2>NEUROMORPHIC INFERENCE</h2>
-                        <span class="badge snn-badge">LIF SNN ENGINE</span>
+            <aside class="side-panel">
+                <section class="panel hero-status">
+                    <p class="eyebrow">Alert score</p>
+                    <div class="score-row">
+                        <span id="accumulated-spikes" class="score">0</span>
+                        <span class="score-threshold">/ <span id="spike-threshold">25</span></span>
                     </div>
-                    
-                    <div class="snn-monitor">
-                        <!-- Membrane Potential Gauge -->
-                        <div class="gauge-container">
-                            <div class="gauge-label">
-                                <span>MEMBRANE POTENTIAL (Vm)</span>
-                                <span id="vm-value" class="lcd-text">0.0000</span>
-                            </div>
-                            <div class="progress-bar-bg">
-                                <div id="vm-bar" class="progress-bar-fill"></div>
-                            </div>
-                        </div>
-
-                        <!-- Spike Train Window -->
-                        <div class="spike-train-container">
-                            <div class="train-label">
-                                <span>TEMPORAL SPIKE TRAIN (3S SLIDING WINDOW)</span>
-                                <span id="spike-rate">0 spikes</span>
-                            </div>
-                            <div id="spike-raster" class="spike-raster">
-                                <!-- Dynamic spikes added here by JS -->
-                            </div>
-                        </div>
-
-                        <!-- Accumulated Spikes Metric -->
-                        <div class="spike-accumulator-area">
-                            <div class="accum-stat">
-                                <span class="lbl">ACCUMULATED SPIKES</span>
-                                <div class="val-wrapper">
-                                    <span id="accumulated-spikes" class="lcd-text big">0</span>
-                                    <span class="threshold-marker">/ <span id="spike-threshold">25</span></span>
-                                </div>
-                            </div>
-                            <div class="threshold-progress">
-                                <div id="threshold-bar" class="threshold-bar-fill"></div>
-                            </div>
-                        </div>
+                    <div class="threshold-progress">
+                        <div id="threshold-bar" class="threshold-bar-fill"></div>
                     </div>
                 </section>
 
-                <!-- Biometric Spatial Metrics (EAR & HPE) -->
                 <section class="panel metrics-panel">
-                    <div class="panel-header">
-                        <h2>BIOMETRIC SPATIAL TELEMETRY</h2>
+                    <div class="panel-title">
+                        <h2>Signals</h2>
+                        <span id="config-save-status" class="soft-badge">Ready</span>
                     </div>
-                    
-                    <div class="metrics-grid">
-                        <!-- Eye Aspect Ratio (EAR) Card -->
-                        <div class="metric-card">
-                            <div class="card-header">
-                                <span class="lbl">EYE ASPECT RATIO (EAR)</span>
-                                <span id="ear-value" class="lcd-text green">0.300</span>
+                    <div class="metric-list">
+                        <div class="metric-row">
+                            <span>EAR</span>
+                            <strong id="ear-value" class="lcd-text green">0.300</strong>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="ear-chart"></canvas>
+                        </div>
+                        <div class="metric-row">
+                            <span>MAR</span>
+                            <strong id="mar-value" class="lcd-text green">0.200</strong>
+                        </div>
+                        <div class="metric-note">Yawn threshold <span id="mar-threshold-label">0.60</span></div>
+                        <div class="pose-grid">
+                            <div>
+                                <span>Pitch</span>
+                                <strong id="hpe-pitch" class="val neutral">0.0 deg</strong>
                             </div>
-                            <!-- Live mini EAR timeline -->
-                            <div class="chart-container">
-                                <canvas id="ear-chart"></canvas>
+                            <div>
+                                <span>Yaw</span>
+                                <strong id="hpe-yaw" class="val neutral">0.0 deg</strong>
+                            </div>
+                            <div>
+                                <span>Roll</span>
+                                <strong id="hpe-roll" class="val neutral">0.0 deg</strong>
                             </div>
                         </div>
-
-                        <!-- Head Pose Orientation (HPE) Card -->
-                        <div class="metric-card">
-                            <div class="card-header">
-                                <span class="lbl">HEAD POSE ESTIMATION (HPE)</span>
-                            </div>
-                            <div class="hpe-stats">
-                                <div class="hpe-axis">
-                                    <span class="lbl">PITCH (NOD)</span>
-                                    <span id="hpe-pitch" class="val neutral">0.0°</span>
-                                </div>
-                                <div class="hpe-axis">
-                                    <span class="lbl">YAW (TURN)</span>
-                                    <span id="hpe-yaw" class="val neutral">0.0°</span>
-                                </div>
-                                <div class="hpe-axis">
-                                    <span class="lbl">ROLL (TILT)</span>
-                                    <span id="hpe-roll" class="val neutral">0.0°</span>
-                                </div>
-                            </div>
+                        <div class="metric-row">
+                            <span>Head drop timer</span>
+                            <strong id="head-drop-timer" class="val neutral">0.0s / 10.0s</strong>
+                        </div>
+                        <div class="metric-row">
+                            <span>Eye closed timer</span>
+                            <strong id="eye-closed-timer" class="val neutral">0.0s / 5.0s</strong>
                         </div>
                     </div>
                 </section>
-            </div>
-            
+
+                <section class="panel snn-panel">
+                    <div class="panel-title">
+                        <h2>SNN activity</h2>
+                        <span id="spike-rate">0 spikes</span>
+                    </div>
+                    <div class="gauge-label">
+                        <span>Membrane potential</span>
+                        <strong id="vm-value" class="lcd-text">0.0000</strong>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div id="vm-bar" class="progress-bar-fill"></div>
+                    </div>
+                    <div id="spike-window-label" class="mini-label">3s spike window</div>
+                    <div id="spike-raster" class="spike-raster"></div>
+                </section>
+            </aside>
         </main>
-        
-        <!-- Controls Footer -->
-        <footer>
-            <div class="footer-left">
-                <span class="version">SPIKEGUARD v1.0.0</span>
-                <span class="divider">|</span>
-                <span class="privacy-note">🔒 Local Processing Only (NFR-03 Compliant)</span>
+
+        <section class="bottom-panel panel">
+            <div class="panel-title">
+                <h2>Settings</h2>
+                <span id="session-log-path" class="log-path">Log pending</span>
             </div>
-            <div class="footer-controls">
-                <button id="btn-sound-toggle" class="control-btn active">
-                    <span class="btn-icon">🔊</span>
-                    <span class="btn-text">AUDIO ALERTS ENABLED</span>
-                </button>
-                <button id="btn-reset" class="control-btn">
-                    <span class="btn-icon">🔄</span>
-                    <span class="btn-text">RESET ENGINE</span>
-                </button>
+            <div class="settings-grid">
+                <label>
+                    <span>Preset</span>
+                    <select id="preset-select">
+                        <option value="relaxed">Relaxed</option>
+                        <option value="standard">Standard</option>
+                        <option value="strict">Strict</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                </label>
+                <label>
+                    <span>EAR threshold</span>
+                    <input id="ear-threshold-input" type="number" min="0.10" max="0.35" step="0.01">
+                </label>
+                <label>
+                    <span>Window (sec)</span>
+                    <input id="window-input" type="number" min="1" max="10" step="0.5">
+                </label>
+                <label>
+                    <span>Spike threshold</span>
+                    <input id="threshold-input" type="number" min="1" max="60" step="1">
+                </label>
+                <button id="btn-save-config" class="primary-btn compact">Apply</button>
             </div>
-        </footer>
+        </section>
     </div>
 
-    <!-- JS Logic -->
     <script src="dashboard.js"></script>
 </body>
 </html>

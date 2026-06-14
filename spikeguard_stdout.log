@@ -1,0 +1,24 @@
+[TRACKER] MediaPipe Tasks API initialized successfully.
+[SYSTEM] SNN Tracker initialized successfully.
+[SYSTEM] Session log: C:\Users\dhruv\Downloads\SpikeGaurd\logs\session_20260614_120344.csv
+[HTTP] Dashboard served at http://localhost:8000
+[WS] WebSocket server starting on ws://localhost:8765
+[CAMERA] Waiting for browser camera frames from dashboard permission flow.
+[PROCESS] Starting execution loop at 15 FPS (Mock=False).
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received SNN reset command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[PROCESS] Received alert dismiss command from UI.
+[WS] Exception in message loop: no close frame received or sent
+[PROCESS] Received alert dismiss command from UI.
+[WS] Exception in message loop: no close frame received or sent
+[PROCESS] Received alert dismiss command from UI.
+[WS] Exception in message loop: no close frame received or sent

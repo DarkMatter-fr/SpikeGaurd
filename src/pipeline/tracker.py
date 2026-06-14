@@ -6,7 +6,17 @@ import math
 import urllib.request
 
 class DriverTracker:
-    def __init__(self, target_fps=15, sliding_window_sec=3.0, threshold_spikes=25.0):
+    def __init__(self, target_fps=15, sliding_window_sec=3.0, threshold_spikes=25.0, config=None):
+        self.target_fps = target_fps
+        self.sliding_window_sec = sliding_window_sec
+        self.threshold_spikes = threshold_spikes
+        self.config = config or {}
+        self.ear_threshold = float(self.config.get("ear_threshold", 0.21))
+        self.mar_threshold = float(self.config.get("mar_threshold", 0.60))
+        self.head_drop_seconds = float(self.config.get("head_drop_seconds", 10.0))
+        self.eye_closed_seconds = float(self.config.get("eye_closed_seconds", 5.0))
+        self.head_drop_started_at = None
+        self.eye_closed_started_at = None
         # 1. Load SNN Engine DLL via ctypes
         self.dll_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "snn_engine.dll"))
         if not os.path.exists(self.dll_path):
@@ -66,6 +76,10 @@ class DriverTracker:
         self.RIGHT_EYE_H = (362, 263)
         self.RIGHT_EYE_V1 = (385, 380)
         self.RIGHT_EYE_V2 = (387, 373)
+
+        self.MOUTH_H = (61, 291)
+        self.MOUTH_V1 = (13, 14)
+        self.MOUTH_V2 = (81, 178)
 
         # 3D Canonical Facial Model Points for HPE (Head Pose Estimation)
         self.HPE_INDICES = [1, 152, 33, 263, 61, 291] # Nose, Chin, L/R eye corners, L/R mouth corners
@@ -152,6 +166,42 @@ class DriverTracker:
 
         return float((dist_v1 + dist_v2) / (2.0 * dist_h))
 
+    def calculate_mar(self, landmarks, img_w, img_h):
+        def get_pt(idx):
+            pt = landmarks[idx]
+            return np.array([pt.x * img_w, pt.y * img_h])
+
+        h_left, h_right = get_pt(self.MOUTH_H[0]), get_pt(self.MOUTH_H[1])
+        v1_top, v1_bottom = get_pt(self.MOUTH_V1[0]), get_pt(self.MOUTH_V1[1])
+        v2_top, v2_bottom = get_pt(self.MOUTH_V2[0]), get_pt(self.MOUTH_V2[1])
+
+        dist_h = np.linalg.norm(h_left - h_right)
+        if dist_h == 0:
+            return 0.0
+
+        dist_v1 = np.linalg.norm(v1_top - v1_bottom)
+        dist_v2 = np.linalg.norm(v2_top - v2_bottom)
+        return float((dist_v1 + dist_v2) / (2.0 * dist_h))
+
+    def update_runtime_config(self, target_fps=None, sliding_window_sec=None, threshold_spikes=None, config=None):
+        self.target_fps = int(target_fps or self.target_fps)
+        self.sliding_window_sec = float(sliding_window_sec or self.sliding_window_sec)
+        self.threshold_spikes = float(threshold_spikes or self.threshold_spikes)
+        if config:
+            self.config.update(config)
+        self.ear_threshold = float(self.config.get("ear_threshold", self.ear_threshold))
+        self.mar_threshold = float(self.config.get("mar_threshold", self.mar_threshold))
+        self.head_drop_seconds = float(self.config.get("head_drop_seconds", self.head_drop_seconds))
+        self.eye_closed_seconds = float(self.config.get("eye_closed_seconds", self.eye_closed_seconds))
+
+        if getattr(self, "snn_engine", None):
+            self.dll.destroy_snn_engine(self.snn_engine)
+        self.snn_engine = self.dll.create_snn_engine(
+            self.target_fps,
+            ctypes.c_float(self.sliding_window_sec),
+            ctypes.c_float(self.threshold_spikes)
+        )
+
     def estimate_head_pose(self, landmarks, img_w, img_h):
         image_points = []
         for idx in self.HPE_INDICES:
@@ -196,16 +246,24 @@ class DriverTracker:
 
         return float(math.degrees(x)), float(math.degrees(y)), float(math.degrees(z))
 
-    def process_snn(self, ear, pitch, yaw, roll):
+    def process_snn(self, ear, pitch, yaw, roll, mar=0.0):
         import time
         spike = ctypes.c_int(0)
         accum = ctypes.c_int(0)
         state_buf = ctypes.create_string_buffer(32)
         v_memb = ctypes.c_float(0.0)
 
+        # The C++ engine uses EAR as its event current. Keep its ABI stable and
+        # translate configurable EAR/MAR risk into the equivalent low-EAR signal.
+        adjusted_ear = 0.30
+        if ear < self.ear_threshold:
+            adjusted_ear = min(adjusted_ear, 0.21 - (self.ear_threshold - ear))
+        if mar > self.mar_threshold:
+            adjusted_ear = min(adjusted_ear, 0.21 - min(0.12, (mar - self.mar_threshold) * 0.6))
+
         self.dll.process_frame_dll(
             self.snn_engine,
-            ctypes.c_float(ear),
+            ctypes.c_float(adjusted_ear),
             ctypes.c_float(pitch),
             ctypes.c_float(yaw),
             ctypes.c_float(roll),
@@ -225,8 +283,63 @@ class DriverTracker:
             "accumulated_spikes": accum.value,
             "state": state,
             "v_membrane": round(v_memb.value, 4),
-            "in_cooldown": in_cooldown
+            "in_cooldown": in_cooldown,
+            "threshold": self.threshold_spikes,
+            "window_seconds": self.sliding_window_sec
         }
+
+    def apply_sustained_posture_rules(self, payload):
+        import time
+        metrics = payload["metrics"]
+        bbox = payload["bounding_box"]
+        img_h = payload["height"]
+        now = time.time()
+
+        if not payload["face_detected"] or bbox["height"] <= 0:
+            self.head_drop_started_at = None
+            self.eye_closed_started_at = None
+            metrics["head_drop_seconds"] = 0.0
+            metrics["eye_closed_seconds"] = 0.0
+            metrics["head_line_y"] = round(img_h / 2.0, 1)
+            payload["snn"]["head_drop_alarm"] = False
+            payload["snn"]["eye_closed_alarm"] = False
+            return payload
+
+        center_y = bbox["y"] + (bbox["height"] / 2.0)
+        head_line_y = img_h / 2.0
+        is_dropped = center_y > head_line_y
+        if is_dropped:
+            if self.head_drop_started_at is None:
+                self.head_drop_started_at = now
+            drop_duration = now - self.head_drop_started_at
+        else:
+            self.head_drop_started_at = None
+            drop_duration = 0.0
+
+        eyes_closed = metrics["avg_ear"] > 0 and metrics["avg_ear"] < self.ear_threshold
+        if eyes_closed:
+            if self.eye_closed_started_at is None:
+                self.eye_closed_started_at = now
+            eye_duration = now - self.eye_closed_started_at
+        else:
+            self.eye_closed_started_at = None
+            eye_duration = 0.0
+
+        metrics["head_drop_seconds"] = round(drop_duration, 1)
+        metrics["eye_closed_seconds"] = round(eye_duration, 1)
+        metrics["head_line_y"] = round(head_line_y, 1)
+        payload["snn"]["head_drop_alarm"] = drop_duration >= self.head_drop_seconds
+        payload["snn"]["head_drop_threshold_seconds"] = self.head_drop_seconds
+        payload["snn"]["eye_closed_alarm"] = eye_duration >= self.eye_closed_seconds
+        payload["snn"]["eye_closed_threshold_seconds"] = self.eye_closed_seconds
+        if payload["snn"]["head_drop_alarm"]:
+            payload["snn"]["state"] = "DROWSY"
+            payload["snn"]["reason"] = "HEAD_DROP_10S"
+        if payload["snn"]["eye_closed_alarm"]:
+            payload["snn"]["state"] = "DROWSY"
+            payload["snn"]["reason"] = "EYES_CLOSED_5S"
+
+        return payload
 
     def process_image(self, frame):
         img_h, img_w, _ = frame.shape
@@ -241,6 +354,7 @@ class DriverTracker:
             "left_ear": 0.0,
             "right_ear": 0.0,
             "avg_ear": 0.0,
+            "mar": 0.0,
             "hpe_pitch": 0.0,
             "hpe_yaw": 0.0,
             "hpe_roll": 0.0
@@ -264,6 +378,7 @@ class DriverTracker:
                 left_ear = self.calculate_ear(face_landmarks, self.LEFT_EYE_H, self.LEFT_EYE_V1, self.LEFT_EYE_V2, img_w, img_h)
                 right_ear = self.calculate_ear(face_landmarks, self.RIGHT_EYE_H, self.RIGHT_EYE_V1, self.RIGHT_EYE_V2, img_w, img_h)
                 avg_ear = (left_ear + right_ear) / 2.0
+                mar = self.calculate_mar(face_landmarks, img_w, img_h)
 
                 # Estimate Head Pose
                 pitch, yaw, roll = self.estimate_head_pose(face_landmarks, img_w, img_h)
@@ -272,6 +387,7 @@ class DriverTracker:
                     "left_ear": round(left_ear, 3),
                     "right_ear": round(right_ear, 3),
                     "avg_ear": round(avg_ear, 3),
+                    "mar": round(mar, 3),
                     "hpe_pitch": round(pitch, 1),
                     "hpe_yaw": round(yaw, 1),
                     "hpe_roll": round(roll, 1)
@@ -312,6 +428,7 @@ class DriverTracker:
                 
                 # Check eyes detection state to calculate EAR
                 avg_ear = 0.30
+                mar = 0.20
                 if len(eyes) >= 2:
                     self.closed_eyes_counter = 0
                     # Standard EAR from aspect ratio of detected eye box
@@ -342,6 +459,7 @@ class DriverTracker:
                     "left_ear": round(avg_ear, 3),
                     "right_ear": round(avg_ear, 3),
                     "avg_ear": round(avg_ear, 3),
+                    "mar": round(mar, 3),
                     "hpe_pitch": round(pitch, 1),
                     "hpe_yaw": round(yaw, 1),
                     "hpe_roll": round(roll, 1)
@@ -358,16 +476,18 @@ class DriverTracker:
         # Feed spatial metrics into SNN
         if face_detected:
             ear = metrics["avg_ear"]
+            mar = metrics["mar"]
             pitch = metrics["hpe_pitch"]
             yaw = metrics["hpe_yaw"]
             roll = metrics["hpe_roll"]
         else:
             ear = 0.30
+            mar = 0.0
             pitch, yaw, roll = 0.0, 0.0, 0.0
 
-        snn_out = self.process_snn(ear, pitch, yaw, roll)
+        snn_out = self.process_snn(ear, pitch, yaw, roll, mar)
 
-        return {
+        payload = {
             "width": img_w,
             "height": img_h,
             "face_detected": face_detected,
@@ -376,11 +496,14 @@ class DriverTracker:
             "snn": snn_out,
             "landmarks": ui_landmarks
         }
+        return self.apply_sustained_posture_rules(payload)
 
     def reset_snn(self):
         import time
         self.dll.reset_snn_engine(self.snn_engine)
         self.cooldown_end_time = time.time() + 5.0
+        self.head_drop_started_at = None
+        self.eye_closed_started_at = None
         if not self.use_mediapipe:
             self.closed_eyes_counter = 0
             self.baseline_y = None
