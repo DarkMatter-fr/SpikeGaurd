@@ -71,11 +71,11 @@ class DriverTracker:
         self.HPE_INDICES = [1, 152, 33, 263, 61, 291] # Nose, Chin, L/R eye corners, L/R mouth corners
         self.model_points = np.array([
             (0.0, 0.0, 0.0),             # Nose tip
-            (0.0, -330.0, -65.0),        # Chin
-            (-225.0, 170.0, -135.0),     # Left eye left corner
-            (225.0, 170.0, -135.0),      # Right eye right corner
-            (-150.0, -150.0, -125.0),    # Left mouth corner
-            (150.0, -150.0, -125.0)      # Right mouth corner
+            (0.0, 330.0, 65.0),          # Chin (below nose -> positive Y, behind -> positive Z)
+            (-225.0, -170.0, 135.0),     # Left eye corner (above nose -> negative Y, behind -> positive Z)
+            (225.0, -170.0, 135.0),      # Right eye corner (above nose -> negative Y, behind -> positive Z)
+            (-150.0, 150.0, 125.0),      # Left mouth corner (below nose -> positive Y, behind -> positive Z)
+            (150.0, 150.0, 125.0)        # Right mouth corner (below nose -> positive Y, behind -> positive Z)
         ], dtype=np.float32)
 
     def setup_mediapipe(self):
